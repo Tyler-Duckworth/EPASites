@@ -1,0 +1,45 @@
+export type AirQualityStation = {
+  "CBSA Full Name": string;
+  "RO": number;
+  "Population 2015": number;
+  "Population 2020": number;
+  "State": string;
+  "County": string;
+  "City": string;
+  "Local Site Name": string;
+  "AQS ID": string;
+  "Latitude": number;
+  "Longitude": number;
+  "Target Road": string;
+  "Recent (>2016) HPMS AADT": number;
+  "Recent (>2016) Est. FE-AADT": number;
+  "Orig. AADT (2012-2015)": number;
+  "Orig. AADT Rank in CBSA": number;
+  "Orig. FE-AADT": number;
+  "Orig. FE-AADT Rank in CBSA": number;
+  "Distance to nearest road travel feature (m)": number;
+  "Distance to nearest mainline (m)": number;
+  "NO2 Probe  Height (m)": number;
+  "Operational": "YES" | "NO"; // Assuming 'YES' or 'NO' are the only string values
+  "Ops Info": string | null;
+  "NO2     Start Date": number | null;
+  "CO     Start Date": number | null;
+  "Continuous PM2.5 Start Date": number | null;
+  "Current Cont. PM2.5 method": string | null;
+  "FRM PM2.5 Start Date": number | null;
+  "FRM PM2.5 Stop Date": number | null;
+  "Current FRM Method/model": string | null;
+  "Black Carbon Start Date": number | null;
+  "BC instrument model": string | null;
+  " Ultrafine Particulate Start Date": number | null;
+  "Ultrafine Particulate Method": string | null;
+  "Meteorology Start Date": number | null;
+  "Ozone Start Date": number | null;
+  "Toxics/ VOCs Start Date": number | null;
+  "CSN Start Date": number | null;
+  "SO2 Start Date": number | null;
+  "Traffic Counter Start Date": number | null;
+  "Traffic Camera Start Date": number | null;
+  "Other Info": string | null;
+  "Coming Soon": string | null;
+}
