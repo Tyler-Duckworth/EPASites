@@ -1,5 +1,5 @@
 'use client'
-import {useState, useMemo, useContext} from 'react';
+import {useState, useMemo, useContext, useEffect} from 'react';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import {
   Map,
@@ -13,19 +13,44 @@ import {
 import * as Pins from "./pin"
 import { IDockviewPanelProps } from 'dockview-react';
 import { AirQualityStation } from './components/AirQualityStation';
-import RAW_SITES from '../../data/near_road_sides.json';
-const SITES: AirQualityStation[] = RAW_SITES as AirQualityStation[];
+import {SITES} from "./components/SharedState";
 
 
-import { SharedStateContext, useSharedState } from './components/SharedState';
+import { SharedStateContext, SiteMetaData, useSharedState } from './components/SharedState';
 interface SiteMapProps {
   dockProps: IDockviewPanelProps,
 
 };
 
+
 export default function SiteMap(props: SiteMapProps) {
   const [popupInfo, setPopupInfo] = useState<any>(null);
   const {sharedState, setSharedState} = useSharedState();
+  const [loading, setLoading] = useState<boolean>(true);
+  const [siteMetaData, setSiteMetaData] = useState<SiteMetaData[] | null>(null);
+  useEffect(() => {
+    const getSiteMetaData = async () => {
+      try {
+        const response = await fetch("http://localhost:8000/sitemetadata/");
+        if (!response.ok) {
+          throw new Error(`Response status: ${response.status}`);
+        }
+
+        const result = (await response.json()) as SiteMetaData[];
+        setSiteMetaData(result);
+        
+      } catch (error: any) {
+        console.error(error.message);
+      }
+      finally {
+        setLoading(false);
+      }
+    }
+    getSiteMetaData();
+  }, []);
+  
+
+  
   const markers = useMemo(() => SITES.map((site, idx) => (
     <Marker
       key={`marker-${idx}`}
@@ -37,13 +62,16 @@ export default function SiteMap(props: SiteMapProps) {
             // with `closeOnClick: true`
             e.originalEvent.stopPropagation();
             setPopupInfo(site);
-            setSharedState(site);
+            console.log(siteMetaData);
+            console.log(loading);
+            setSharedState({...sharedState, stations: siteMetaData, currentStation: site});
           }}>
         <Pins.default/>
     </Marker>
-  )), []);
-  
-  
+  )), [siteMetaData]);
+  if (loading) {
+    return <div>Loading data...</div>;
+  }
   return (
     <Map
       initialViewState={{
