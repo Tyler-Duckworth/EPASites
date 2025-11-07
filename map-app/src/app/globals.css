@@ -41,3 +41,7 @@ body {
         border-radius: 2px;
         background-color: var(--dv-icon-hover-background-color);
     }
+
+.dv-default-tab-content {
+  padding-left: 0.5rem;
+}

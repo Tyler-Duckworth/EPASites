@@ -47,9 +47,9 @@ export default function DisplayPane(props: DisplayPaneProps) {
             sharedState?.api?.addPanel({
                 id: panel_id,
                 component: 'graphPane',
-                tabComponent: 'default',
+                title: `${sharedState?.currentStation?.["Local Site Name"] ?? "Site Name"} | ${pollutantShortName}`,
+                // tabComponent: 'default',
                 params: {
-                    title: `${sharedState?.currentStation?.["Local Site Name"] ?? "Site Name"} | ${pollutantShortName}`,
                     start_date: start_date,
                     end_date: `${end_date.getFullYear()}-${end_date.getMonth()}-${end_date.getDay()}`,
                     pollutant: pollutantName
@@ -61,12 +61,11 @@ export default function DisplayPane(props: DisplayPaneProps) {
         }
     }
     useEffect(() => {
-        props.dockProps.api.updateParameters({title: sharedState?.currentStation?.["Local Site Name"] ?? "Site Info"})
-
+        props.dockProps.api.setTitle(sharedState?.currentStation?.["Local Site Name"] ?? "Site Info");
     }, [sharedState]);
     return (
     
-        <div className="px-5 pt-5 w-full h-full text-black">
+        <div className="px-5 py-5 w-full h-full text-black overflow-auto ">
             {site ?  <>
             <div className="mb-5">
                 <h2 className="text-2xl font-bold">{site["Local Site Name"]}</h2>

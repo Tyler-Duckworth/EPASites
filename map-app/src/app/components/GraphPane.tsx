@@ -67,23 +67,28 @@ export default function GraphPane(props: GraphPaneProps) {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isEditingQuery, setIsEditingQuery] = useState<boolean>(false);
     const [query, setQuery] = useState<Query>({
-        startDate: new Date(props.startDate), 
-        endDate: new Date(props.endDate), 
+        startDate: getDateFromString(props.startDate), 
+        endDate: getDateFromString(props.endDate), 
         pollutant: props.pollutant, 
         aqs_site_id: sharedState?.currentStation?.["AQS ID"]
     });
+    function getDateFromString(dateString: string): Date {
+        const [year, month, day] = dateString.split('-');
+        return new Date(+year, +month - 1, +day);
+    }
 
     function formatTicks(date: Date): string {
         const options: Intl.DateTimeFormatOptions = {
             month: 'short', 
             year: 'numeric', 
+            timeZone: "UTC"
         };
         return new Intl.DateTimeFormat('en-US', options).format(date);
     }
     function formatDate(date: Date) {
-        const year = date.getFullYear();
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
-        const day = String(date.getDate()).padStart(2, '0');
+        const year = date.getUTCFullYear();
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+        const day = String(date.getUTCDate()).padStart(2, '0');
         return `${year}-${month}-${day}`;
     }
 
@@ -135,16 +140,16 @@ export default function GraphPane(props: GraphPaneProps) {
                     <div className="table border-spacing-y-5">
                         <div className="table-row">
                             <p className="table-cell text-right">Start Date:</p>
-                            <DatePicker className="table-cell bg-gray-200 px-3 py-1 ml-5 rounded-sm hover:cursor-pointer" selected={query.startDate} onChange={(date) => setQuery({...query, startDate: date ?? new Date()})}/>
+                            <DatePicker className="table-cell bg-gray-200 px-3 py-1 ml-5 rounded-sm hover:cursor-pointer border-1" selected={query.startDate} onChange={(date) => setQuery({...query, startDate: date ?? new Date()})}/>
                         </div>
                         <div className="table-row">
                             <p className="table-cell text-right">End Date:</p>
-                            <DatePicker className="table-cell bg-gray-200 px-3 py-1 ml-5 rounded-sm hover:cursor-pointer"  selected={query.endDate} onChange={(date) => setQuery({...query, endDate: date ?? new Date()})}/>
+                            <DatePicker className="table-cell bg-gray-200 px-3 py-1 ml-5 rounded-sm hover:cursor-pointer border-1"  selected={query.endDate} onChange={(date) => setQuery({...query, endDate: date ?? new Date()})}/>
                         </div>
                         <div className="table-row">
                             <p className="table-cell text-right">Site:</p>
                             {SITES && 
-                                <select name="site" className="table-cell ml-5 px-3 py-1 bg-gray-200 rounded-sm hover:cursor-pointer" defaultValue={query.aqs_site_id}>
+                                <select name="site" className="table-cell ml-5 px-3 py-1 bg-gray-200 rounded-sm hover:cursor-pointer border-1" defaultValue={query.aqs_site_id}>
                                     {SITES.map(s => (
                                         <option key={s['AQS ID']} value={s["AQS ID"]}>{s["Local Site Name"]} - {s.City}, {s.State}</option>
                                     ))}
@@ -153,14 +158,14 @@ export default function GraphPane(props: GraphPaneProps) {
                         </div>
                         <div className="table-row">
                             <p  className="table-cell text-right">Pollutant:</p>
-                            <select name="pollutant" className="table-cell ml-5 px-3 py-1 bg-gray-200 rounded-sm hover:cursor-pointer" defaultValue={query.pollutant}>
+                            <select name="pollutant" className="table-cell ml-5 px-3 py-1 bg-gray-200 rounded-sm hover:cursor-pointer border-1" defaultValue={query.pollutant}>
                                 <option key="1" value="NO2 1-hour 2010">NO2</option>
                                 <option key="2"  value="PM25 24-hour 2006">PM2.5</option>
                                 <option key="3" value="CO 8-hour 1971">CO</option>
                             </select>
                         </div>
                     </div>
-                    <button type="submit">Submit</button>
+                    <button type="submit" className="border-2 px-5 py-2 w-full text-xl rounded-md transition-all duration-300 bg-white hover:bg-black hover:text-white hover:cursor-pointer">Submit</button>
                 </form>
             </div>
         )
@@ -184,7 +189,8 @@ export default function GraphPane(props: GraphPaneProps) {
                     <Legend />
                     <Line type="monotone" dataKey="value"/>
                 </LineChart>
-            </> : <div className="max-w-[850px] h-full, max-h-[70vh]"><p>No data was found. Please try again.</p></div>}
+            </> : <div className="max-w-[850px] w-[850px] h-[500px] max-h-[70vh] text-black flex items-center content-center justify-center">
+                <p>No data was found. Please try again.</p></div>}
             
             
         </div>

@@ -6,7 +6,8 @@ import {
   IDockviewPanelProps,
   DockviewPanelApi,
   DockviewGroupPanelApi,
-  IDockviewPanelHeaderProps
+  IDockviewPanelHeaderProps,
+  DockviewDefaultTab
 } from "dockview-react";
 import SiteMap from "./SiteMap";
 import { SharedStateProvider, useSharedState } from "./components/SharedState";
@@ -51,11 +52,12 @@ const components = {
 const tabComponents = {
     default: (props: IDockviewPanelHeaderProps<{ title: string }>) => {
         return (
-            <div className="my-custom-tab">
-                <span>{props.params.title}</span>
-                <span style={{ flexGrow: 1 }} />
-
-            </div>
+            <DockviewDefaultTab hideClose={false} {...props}/>
+        );
+    },
+    nonClosableTab: (props: IDockviewPanelHeaderProps<{ title: string }>) => {
+        return (
+            <DockviewDefaultTab hideClose={true} {...props}/>
         );
     },
 };
@@ -67,7 +69,8 @@ export default function MainWindow() {
         const mapPanel = event.api.addPanel({
             id: 'panel_1',
             component: 'mapComponent',
-            tabComponent: 'default',
+            tabComponent: 'nonClosableTab',
+            title: "Map",
             params: {
                 title: 'Map',
             },
@@ -76,7 +79,8 @@ export default function MainWindow() {
         const otherPanel = event.api.addPanel({
             id: 'panel_2',
             component: 'displayPane',
-            tabComponent: 'default',
+            tabComponent: 'nonClosableTab',
+            title: "Site Info",
             params: {
                 title: 'Window 2',
             },
@@ -96,8 +100,10 @@ export default function MainWindow() {
                     onReady={onReady}
                     theme={themeLight}
                     components={components}
+                    // defaultTabComponent={tabComponents.default}
                     tabComponents={tabComponents}
-                    singleTabMode="fullwidth"
+                    // singleTabMode="fullwidth"
+                    scrollbars="native"
                 />
             </div>
         </div>
