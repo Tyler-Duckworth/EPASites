@@ -1,21 +1,14 @@
 // src/SharedContext.js
 import React, { createContext, useState, useContext, Dispatch, SetStateAction } from 'react';
-import { AirQualityStation } from './AirQualityStation';
+import { AirQualityStation } from '../types/AirQualityStation';
 import { DockviewApi } from 'dockview-core';
 import RAW_SITES from '../../../data/near_road_sides.json';
+import { SiteMetaData } from '../types/SiteMetaData';
+
+
 export const SITES: AirQualityStation[] = RAW_SITES as AirQualityStation[];
-export interface SiteMetaData {
-  city: string
-  co_start_date: string | null
-  county: string
-  latitude: number
-  longitude: number
-  no2_start_date: string | null
-  pm_start_date: string | null
-  site_id: string
-  state: string
-  url: string
-}
+
+
 
 // 1. Define the Context
 export interface SharedStateType {

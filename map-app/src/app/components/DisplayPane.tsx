@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 import { metadata } from "../layout";
-import { useSharedState, SharedStateType, SiteMetaData } from "./SharedState";
+import { useSharedState, SharedStateType } from "./SharedState";
 import { DockviewApi, IDockviewPanelProps } from "dockview-core";
+import { SiteMetaData } from "../types/SiteMetaData";
 
 interface DisplayPaneProps {
   dockProps: IDockviewPanelProps,
@@ -9,10 +10,7 @@ interface DisplayPaneProps {
 
 function getMetaDataEntry(sharedState: SharedStateType): SiteMetaData | null {
     let aqs_id = sharedState.currentStation?.["AQS ID"];
-
     let filteredSites = sharedState.stations?.filter(v => v.site_id == aqs_id);
-    console.log(aqs_id);
-    console.log(sharedState.stations);
     if(filteredSites?.length == 1) {
         return filteredSites[0];
     }
@@ -23,18 +21,20 @@ export default function DisplayPane(props: DisplayPaneProps) {
     const {sharedState, setSharedState} = useSharedState();
     const site = sharedState?.currentStation;
     const metaData = sharedState ? getMetaDataEntry(sharedState) : undefined;
-    // props.dockProps.api.addPanel()
+    
     function plotNO2() {
-        plotPollutant("NO2", "NO2 1-hour 2010", metaData?.no2_start_date);
+        plotPollutant("NO2", "NO2 1-hour 2010", metaData?.no2_start_date, "Nitrogen Dioxide (NO<sub>2</sub>)");
     }
+    
     function plotPM25() {
-        plotPollutant("PM25", "PM25 24-hour 2006", metaData?.pm_start_date);
+        plotPollutant("PM25", "PM25 24-hour 2006", metaData?.pm_start_date, "Fine Particulate Matter (PM<sub>2.5</sub>)");
     }
+    
     function plotCO() {
-        plotPollutant("CO", "CO 8-hour 1971", metaData?.co_start_date);
+        plotPollutant("CO", "CO 8-hour 1971", metaData?.co_start_date, "Carbon Monoxide (CO)");
     }
-    function plotPollutant(pollutantShortName: string, pollutantName: string, start_date: string | null | undefined) {
-        console.log(sharedState?.api?.groups);
+    
+    function plotPollutant(pollutantShortName: string, pollutantName: string, start_date: string | null | undefined, label: string) {
         
         let panel_id = `${sharedState?.currentStation?.["AQS ID"]}_${pollutantShortName}`
         let existingPanel = sharedState?.api?.getPanel(panel_id);
@@ -52,7 +52,8 @@ export default function DisplayPane(props: DisplayPaneProps) {
                 params: {
                     start_date: start_date,
                     end_date: `${end_date.getFullYear()}-${end_date.getMonth()}-${end_date.getDay()}`,
-                    pollutant: pollutantName
+                    pollutant: pollutantName,
+                    label: label
                 },
                 position: {
                     referenceGroup: sharedState?.api?.groups[0]
@@ -60,9 +61,11 @@ export default function DisplayPane(props: DisplayPaneProps) {
             });
         }
     }
+
     useEffect(() => {
         props.dockProps.api.setTitle(sharedState?.currentStation?.["Local Site Name"] ?? "Site Info");
     }, [sharedState]);
+    
     return (
     
         <div className="px-5 py-5 w-full h-full text-black overflow-auto ">
@@ -110,12 +113,8 @@ export default function DisplayPane(props: DisplayPaneProps) {
                 <button onClick={plotCO} className="w-full border-2 rounded-md py-3 mt-3 text-xl transition-all duration-300 bg-white hover:bg-black hover:text-white hover:cursor-pointer">Plot CO</button>
             </div>}
             
-            {/* <div className="mt-5">
-                <h3 className="text-xl font-bold">Raw JSON</h3>
-                {JSON.stringify(site)}
-            </div> */}
+            
             </>: <div className="w-full h-full flex content-center items-center justify-center"><p className="text-black">Select a site to get started.</p></div>}
-            {/* {metaData ? <p>{JSON.stringify(metaData)}</p> : <p>BLAH</p>} */}
         </div>
     );
 }

@@ -15,6 +15,7 @@ import DisplayPane from "./components/DisplayPane";
 import { useState } from "react";
 import GraphPane from "./components/GraphPane";
 import { themeLight } from "dockview";
+
 const components = {
     default: (props: IDockviewPanelProps<{ title: string; x?: number }>) => {
         return (
@@ -42,9 +43,14 @@ const components = {
             <DisplayPane dockProps={props}/>
         );
     },
-    graphPane: (props: IDockviewPanelProps<{ start_date: string; end_date: string, pollutant: string }>) => {
+    graphPane: (props: IDockviewPanelProps<{ start_date: string; end_date: string, pollutant: string, label: string }>) => {
         return (
-            <GraphPane dockProps={props} startDate={props.params.start_date} endDate={props.params.end_date} pollutant={props.params.pollutant}/>
+            <GraphPane 
+                dockProps={props} 
+                startDate={props.params.start_date} 
+                endDate={props.params.end_date} 
+                pollutant={props.params.pollutant}
+                label={props.params.label}/>
         );
     },
 };

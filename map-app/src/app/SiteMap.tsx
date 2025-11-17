@@ -12,7 +12,7 @@ import {
 } from 'react-map-gl/maplibre';
 import * as Pins from "./pin"
 import { IDockviewPanelProps } from 'dockview-react';
-import { AirQualityStation } from './components/AirQualityStation';
+import { AirQualityStation } from './types/AirQualityStation';
 import {SITES} from "./components/SharedState";
 
 

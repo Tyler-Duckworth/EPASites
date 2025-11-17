@@ -1,63 +1,24 @@
 import { useEffect, useState } from "react";
-import { useSharedState, SharedStateType, SiteMetaData, SITES} from "./SharedState";
+import { useSharedState, SharedStateType, SITES} from "./SharedState";
 import { IDockviewPanelProps } from "dockview-core";
-import { Line, LineChart, XAxis, YAxis, Tooltip, Legend } from "recharts";
+import { Line, LineChart, XAxis, YAxis, Tooltip, Legend, Label } from "recharts";
 import DatePicker from "react-datepicker";
+import SiteAqiData from "../types/SiteAqiData";
 
 interface GraphPaneProps {
   dockProps: IDockviewPanelProps,
   startDate: string,
   endDate: string,
-  pollutant: string
+  pollutant: string,
+  label: string
 };
 
-interface Query {
+interface GraphQuery {
   startDate: Date,
   endDate: Date,
   aqs_site_id?: string,
-  pollutant: string
-}
-
-interface ISiteAqiData {
-    county: string
-    date: string
-    pollutant: string
-    site_id: string
-    state: string
-    units: string
-    value: number
-    timestamp: Date
-}
-
-class SiteAqiData implements ISiteAqiData {
-    county: string;
-    date: string;
-    pollutant: string;
-    site_id: string;
-    state: string;
-    units: string;
-    value: number;
-    
-    constructor(
-        county: string,
-        date: string,
-        pollutant: string,
-        site_id: string,
-        state: string,
-        units: string,
-        value: number,
-    ) {
-        this.county = county;
-        this.date = date;
-        this.pollutant = pollutant;
-        this.site_id = site_id;
-        this.state = state;
-        this.units = units;
-        this.value = value;
-    }
-    get timestamp(): Date {
-        return new Date(this.date);
-    }
+  pollutant: string,
+  label: string
 }
 
 
@@ -66,23 +27,36 @@ export default function GraphPane(props: GraphPaneProps) {
     const [dataset, setDataset] = useState<SiteAqiData[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [isEditingQuery, setIsEditingQuery] = useState<boolean>(false);
-    const [query, setQuery] = useState<Query>({
+    const [query, setQuery] = useState<GraphQuery>({
         startDate: getDateFromString(props.startDate), 
         endDate: getDateFromString(props.endDate), 
         pollutant: props.pollutant, 
-        aqs_site_id: sharedState?.currentStation?.["AQS ID"]
+        aqs_site_id: sharedState?.currentStation?.["AQS ID"],
+        label: props.label
     });
+    const [yLabel, setyLabel] = useState<string>();
     function getDateFromString(dateString: string): Date {
         const [year, month, day] = dateString.split('-');
         return new Date(+year, +month - 1, +day);
     }
 
     function formatTicks(date: Date): string {
-        const options: Intl.DateTimeFormatOptions = {
-            month: 'short', 
-            year: 'numeric', 
-            timeZone: "UTC"
-        };
+        let daysOverRange = (query.endDate.getTime() - query.startDate.getTime()) / ( 1000 * 60 * 60 * 24);
+        
+        let options: Intl.DateTimeFormatOptions;
+        if(daysOverRange > 31) {
+            options = {
+                month: 'short', 
+                year: 'numeric', 
+                timeZone: "UTC"
+            };
+        }
+        else {
+            options = {
+                month: '2-digit',
+                day: '2-digit'
+            };
+        }
         return new Intl.DateTimeFormat('en-US', options).format(date);
     }
     function formatDate(date: Date) {
@@ -96,7 +70,7 @@ export default function GraphPane(props: GraphPaneProps) {
         const fetchData = async () => {
             try {
                 let site_id = query.aqs_site_id ?? "";
-                var response = await fetch(`http://127.0.0.1:8000/sitemetadata/87/data?site_id=${site_id}&start_date=${formatDate(query.startDate)}&end_date=${formatDate(query.endDate)}`)
+                var response = await fetch(`http://127.0.0.1:8000/sitemetadata/87/data?site_id=${site_id}&start_date=${formatDate(query.startDate)}&end_date=${formatDate(query.endDate)}&pollutant=${query.pollutant}`)
                 if (!response.ok) {
                     throw new Error(`Response status: ${response.status}`);
                 }
@@ -108,6 +82,7 @@ export default function GraphPane(props: GraphPaneProps) {
                 else {
                     result.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
                     setDataset(result);
+                    setyLabel(result[0].units)
                 }
                 setIsLoading(false);
             }
@@ -128,6 +103,7 @@ export default function GraphPane(props: GraphPaneProps) {
         setQuery({...query, aqs_site_id: site.value,  pollutant: pollutant.value});
         setIsEditingQuery(false);
     }
+
     if(isLoading) {
         return <div>Loading data...</div>
     }
@@ -180,15 +156,19 @@ export default function GraphPane(props: GraphPaneProps) {
             </div>
             {dataset.length != 0 ? <>
                 <LineChart data={dataset}
-                    style={{ width: '100%', maxWidth: '850px', height: '100%', maxHeight: '70vh', aspectRatio: 1.618 }}>
+                    style={{ width: '100%', maxWidth: '850px', height: '100%', maxHeight: '70vh', aspectRatio: 1.618 }}
+                    margin={{left:20}}
+                    >
                     <XAxis 
                         dataKey="date" 
                         tickFormatter={unixTime => formatTicks(new Date(unixTime))}/>
-                    <YAxis width="auto" />
+                    <YAxis width="auto">
+                    <Label angle={-90} value={yLabel} position='left' style={{textAnchor: 'middle'}} offset={15} />
+                    </YAxis>
                     <Tooltip />
-                    <Legend />
                     <Line type="monotone" dataKey="value"/>
                 </LineChart>
+                <h2 className="text-black text-xl font-bold" dangerouslySetInnerHTML={{__html: props.label}}></h2>
             </> : <div className="max-w-[850px] w-[850px] h-[500px] max-h-[70vh] text-black flex items-center content-center justify-center">
                 <p>No data was found. Please try again.</p></div>}
             
